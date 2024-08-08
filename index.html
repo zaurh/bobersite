@@ -49,42 +49,54 @@
     </div>
 
     <script>
-        // Replace this URL with the actual URL of your JSON data
-        const apiUrl = 'https://jwttest-4f945ca4f70a.herokuapp.com/users/zaurway';
+        // Function to get query parameters from the URL
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
 
-        fetch(apiUrl)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('username').textContent = data.user.username;
-                    document.getElementById('profilePicture').src = data.user.profilePicture;
-                    document.getElementById('gender').textContent = data.user.gender;
-                    document.getElementById('birthDate').textContent = data.user.birthDate;
+        // Get the username from the URL parameters
+        const username = getQueryParam('username');
+        if (username) {
+            // Construct the API URL with the username
+            const apiUrl = `https://jwttest-4f945ca4f70a.herokuapp.com/users/${username}`;
 
-                    const interestsList = document.getElementById('interests');
-                    data.user.interests.forEach(interest => {
-                        const li = document.createElement('li');
-                        li.textContent = interest;
-                        interestsList.appendChild(li);
-                    });
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('username').textContent = data.user.username;
+                        document.getElementById('profilePicture').src = data.user.profilePicture;
+                        document.getElementById('gender').textContent = data.user.gender;
+                        document.getElementById('birthDate').textContent = data.user.birthDate;
 
-                    const imageUrlsList = document.getElementById('imageUrls');
-                    data.user.imageUrl.forEach(imageUrl => {
-                        const li = document.createElement('li');
-                        const img = document.createElement('img');
-                        img.src = imageUrl;
-                        img.alt = 'User Image';
-                        img.style.maxWidth = '100px';
-                        li.appendChild(img);
-                        imageUrlsList.appendChild(li);
-                    });
-                } else {
-                    document.querySelector('.profile').innerHTML = `<p>Error: ${data.message}</p>`;
-                }
-            })
-            .catch(error => {
-                document.querySelector('.profile').innerHTML = `<p>Error: ${error.message}</p>`;
-            });
+                        const interestsList = document.getElementById('interests');
+                        data.user.interests.forEach(interest => {
+                            const li = document.createElement('li');
+                            li.textContent = interest;
+                            interestsList.appendChild(li);
+                        });
+
+                        const imageUrlsList = document.getElementById('imageUrls');
+                        data.user.imageUrl.forEach(imageUrl => {
+                            const li = document.createElement('li');
+                            const img = document.createElement('img');
+                            img.src = imageUrl;
+                            img.alt = 'User Image';
+                            img.style.maxWidth = '100px';
+                            li.appendChild(img);
+                            imageUrlsList.appendChild(li);
+                        });
+                    } else {
+                        document.querySelector('.profile').innerHTML = `<p>Error: ${data.message}</p>`;
+                    }
+                })
+                .catch(error => {
+                    document.querySelector('.profile').innerHTML = `<p>Error: ${error.message}</p>`;
+                });
+        } else {
+            document.querySelector('.profile').innerHTML = `<p>Error: Username not provided in URL.</p>`;
+        }
     </script>
 </body>
 </html>
