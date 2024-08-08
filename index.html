@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .profile {
+            max-width: 600px;
+            margin: auto;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .profile img {
+            border-radius: 50%;
+            max-width: 150px;
+            height: auto;
+        }
+        .profile h1 {
+            margin-top: 0;
+        }
+        .interests {
+            list-style-type: none;
+            padding: 0;
+        }
+        .interests li {
+            background: #f4f4f4;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile">
+        <h1 id="username">Username</h1>
+        <img id="profilePicture" src="" alt="Profile Picture">
+        <p><strong>Gender:</strong> <span id="gender">Gender</span></p>
+        <p><strong>Birth Date:</strong> <span id="birthDate">Birth Date</span></p>
+        <h2>Interests</h2>
+        <ul id="interests" class="interests"></ul>
+        <h2>Image URL</h2>
+        <ul id="imageUrls" class="interests"></ul>
+    </div>
+
+    <script>
+        // Replace this URL with the actual URL of your JSON data
+        const apiUrl = 'https://your-heroku-app-url/endpoint';
+
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('username').textContent = data.user.username;
+                    document.getElementById('profilePicture').src = data.user.profilePicture;
+                    document.getElementById('gender').textContent = data.user.gender;
+                    document.getElementById('birthDate').textContent = data.user.birthDate;
+
+                    const interestsList = document.getElementById('interests');
+                    data.user.interests.forEach(interest => {
+                        const li = document.createElement('li');
+                        li.textContent = interest;
+                        interestsList.appendChild(li);
+                    });
+
+                    const imageUrlsList = document.getElementById('imageUrls');
+                    data.user.imageUrl.forEach(imageUrl => {
+                        const li = document.createElement('li');
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = 'User Image';
+                        img.style.maxWidth = '100px';
+                        li.appendChild(img);
+                        imageUrlsList.appendChild(li);
+                    });
+                } else {
+                    document.querySelector('.profile').innerHTML = `<p>Error: ${data.message}</p>`;
+                }
+            })
+            .catch(error => {
+                document.querySelector('.profile').innerHTML = `<p>Error: ${error.message}</p>`;
+            });
+    </script>
+</body>
+</html>
