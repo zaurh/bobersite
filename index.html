@@ -9,94 +9,194 @@
             font-family: Arial, sans-serif;
             margin: 20px;
         }
-        .profile {
+        .profile-container {
             max-width: 600px;
             margin: auto;
             border: 1px solid #ddd;
             padding: 20px;
             border-radius: 8px;
         }
-        .profile img {
+        .profile-picture {
             border-radius: 50%;
             max-width: 150px;
             height: auto;
         }
-        .profile h1 {
+        .profile-header {
+            text-align: center;
+        }
+        .profile-header h1 {
             margin-top: 0;
         }
-        .interests {
-            list-style-type: none;
-            padding: 0;
+        .carousel {
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
         }
-        .interests li {
+        .carousel img {
+            width: 100%;
+            height: auto;
+        }
+        .carousel-indicators {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .carousel-indicator {
+            display: inline-block;
+            width: 40px;
+            height: 5px;
+            margin: 0 4px;
+            background: darkgray;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+        .carousel-indicator.active {
+            background: white;
+        }
+        .profile-info {
+            margin-bottom: 20px;
+        }
+        .profile-info h2 {
+            font-size: 16px;
+            color: #333;
+            font-weight: bold;
+        }
+        .profile-info p {
+            color: #666;
+        }
+        .profile-info .list-item {
             background: #f4f4f4;
             margin: 5px 0;
             padding: 10px;
             border-radius: 5px;
         }
+        .profile-actions {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .profile-actions button {
+            margin: 5px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .profile-actions .share-button {
+            background-color: #007bff;
+            color: white;
+        }
+        .profile-actions .report-button {
+            background-color: #dc3545;
+            color: white;
+        }
     </style>
 </head>
 <body>
-    <div class="profile">
-        <h1 id="username">Username</h1>
-        <img id="profilePicture" src="" alt="Profile Picture">
-        <p><strong>Gender:</strong> <span id="gender">Gender</span></p>
-        <p><strong>Birth Date:</strong> <span id="birthDate">Birth Date</span></p>
-        <h2>Interests</h2>
-        <ul id="interests" class="interests"></ul>
-        <h2>Image URL</h2>
-        <ul id="imageUrls" class="interests"></ul>
+    <div class="profile-container">
+        <div class="profile-header">
+            <img id="profilePicture" class="profile-picture" src="" alt="Profile Picture">
+            <h1 id="username">Username</h1>
+        </div>
+
+        <div class="carousel">
+            <img id="carouselImage" src="" alt="Profile Images">
+            <div class="carousel-indicators" id="carouselIndicators"></div>
+        </div>
+
+        <div class="profile-info">
+            <div id="userInfo"></div>
+            <div id="aboutMe" style="display: none;"></div>
+            <div id="languages" style="display: none;"></div>
+        </div>
+
+        <div class="profile-actions">
+            <button id="blockButton">Block User</button>
+            <button id="unlikeButton" style="display: none;">Unlike User</button>
+            <button id="unmatchButton" style="display: none;">Unmatch User</button>
+            <button id="shareButton" class="share-button">Share Profile</button>
+            <button id="reportButton" class="report-button">Report User</button>
+        </div>
     </div>
 
     <script>
-        // Function to get query parameters from the URL
-        function getQueryParam(param) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param);
-        }
+        // Replace this URL with the actual URL of your JSON data
+        const apiUrl = new URLSearchParams(window.location.search).get('username')
+            ? `https://jwttest-4f945ca4f70a.herokuapp.com/users/${new URLSearchParams(window.location.search).get('username')}`
+            : '';
 
-        // Get the username from the URL parameters
-        const username = getQueryParam('username');
-        if (username) {
-            // Construct the API URL with the username
-            const apiUrl = `https://jwttest-4f945ca4f70a.herokuapp.com/users/${username}`;
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const user = data.user;
+                    document.getElementById('username').textContent = user.username;
+                    document.getElementById('profilePicture').src = user.profilePicture;
 
-            fetch(apiUrl)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById('username').textContent = data.user.username;
-                        document.getElementById('profilePicture').src = data.user.profilePicture;
-                        document.getElementById('gender').textContent = data.user.gender;
-                        document.getElementById('birthDate').textContent = data.user.birthDate;
+                    const carouselIndicators = document.getElementById('carouselIndicators');
+                    const carouselImage = document.getElementById('carouselImage');
 
-                        const interestsList = document.getElementById('interests');
-                        data.user.interests.forEach(interest => {
-                            const li = document.createElement('li');
-                            li.textContent = interest;
-                            interestsList.appendChild(li);
+                    user.imageUrl.forEach((image, index) => {
+                        const indicator = document.createElement('div');
+                        indicator.className = 'carousel-indicator';
+                        if (index === 0) indicator.classList.add('active');
+                        indicator.addEventListener('click', () => {
+                            carouselImage.src = image;
+                            document.querySelectorAll('.carousel-indicator').forEach(ind => ind.classList.remove('active'));
+                            indicator.classList.add('active');
                         });
+                        carouselIndicators.appendChild(indicator);
+                    });
 
-                        const imageUrlsList = document.getElementById('imageUrls');
-                        data.user.imageUrl.forEach(imageUrl => {
-                            const li = document.createElement('li');
-                            const img = document.createElement('img');
-                            img.src = imageUrl;
-                            img.alt = 'User Image';
-                            img.style.maxWidth = '100px';
-                            li.appendChild(img);
-                            imageUrlsList.appendChild(li);
-                        });
-                    } else {
-                        document.querySelector('.profile').innerHTML = `<p>Error: ${data.message}</p>`;
+                    carouselImage.src = user.imageUrl[0];
+
+                    const userInfo = document.getElementById('userInfo');
+                    userInfo.innerHTML = `
+                        <h2>${user.name}</h2>
+                        ${user.jobTitle ? `<p>${user.jobTitle}</p>` : ''}
+                        <p>Gender: ${user.gender.displayName}</p>
+                        ${user.height ? `<p>Height: ${user.height}cm</p>` : ''}
+                    `;
+
+                    if (user.aboutMe) {
+                        const aboutMe = document.getElementById('aboutMe');
+                        aboutMe.style.display = 'block';
+                        aboutMe.innerHTML = `<h2>About</h2><p>${user.aboutMe}</p>`;
                     }
-                })
-                .catch(error => {
-                    document.querySelector('.profile').innerHTML = `<p>Error: ${error.message}</p>`;
-                });
-        } else {
-            document.querySelector('.profile').innerHTML = `<p>Error: Username not provided in URL.</p>`;
-        }
+
+                    if (user.languages) {
+                        const languages = document.getElementById('languages');
+                        languages.style.display = 'block';
+                        languages.innerHTML = `<h2>Languages</h2><p>${user.languages.map(lang => lang.displayName).join(', ')}</p>`;
+                    }
+
+                    // Example logic for buttons
+                    document.getElementById('blockButton').addEventListener('click', () => {
+                        // Add your block logic here
+                    });
+
+                    document.getElementById('unlikeButton').addEventListener('click', () => {
+                        // Add your unlike logic here
+                    });
+
+                    document.getElementById('unmatchButton').addEventListener('click', () => {
+                        // Add your unmatch logic here
+                    });
+
+                    document.getElementById('shareButton').addEventListener('click', () => {
+                        const shareUrl = `https://zaurh.github.io/bobersite/?username=${user.username}`;
+                        const shareIntent = `Share this profile: ${shareUrl}`;
+                        prompt('Share this profile:', shareUrl);
+                    });
+
+                    document.getElementById('reportButton').addEventListener('click', () => {
+                        // Add your report logic here
+                    });
+                } else {
+                    document.querySelector('.profile-container').innerHTML = `<p>Error: ${data.message}</p>`;
+                }
+            })
+            .catch(error => {
+                document.querySelector('.profile-container').innerHTML = `<p>Error: ${error.message}</p>`;
+            });
     </script>
 </body>
 </html>
