@@ -17,8 +17,8 @@
             border-radius: 8px;
         }
         .profile img {
-            border-radius: 50%;
-            max-width: 150px;
+            border-radius: 8px;
+            max-width: 100px;
             height: auto;
         }
         .profile h1 {
@@ -34,12 +34,21 @@
             padding: 10px;
             border-radius: 5px;
         }
+        .image-gallery {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+        }
+        .image-gallery img {
+            max-width: 150px;
+            height: auto;
+        }
     </style>
 </head>
 <body>
     <div class="profile">
         <h1 id="username">Username</h1>
-        <img id="profilePicture" src="" alt="Profile Picture">
+        <div id="imageGallery" class="image-gallery"></div>
         <p><strong>Gender:</strong> <span id="gender">Gender</span></p>
         <p><strong>Birth Date:</strong> <span id="birthDate">Birth Date</span></p>
         <h2>Interests</h2>
@@ -66,7 +75,15 @@
                 .then(data => {
                     if (data.success) {
                         document.getElementById('username').textContent = data.user.username;
-                        document.getElementById('profilePicture').src = data.user.profilePicture;
+
+                        const imageGallery = document.getElementById('imageGallery');
+                        data.user.imageUrl.forEach(imageUrl => {
+                            const img = document.createElement('img');
+                            img.src = imageUrl;
+                            img.alt = 'User Image';
+                            imageGallery.appendChild(img);
+                        });
+
                         document.getElementById('gender').textContent = data.user.gender;
                         document.getElementById('birthDate').textContent = data.user.birthDate;
 
@@ -75,17 +92,6 @@
                             const li = document.createElement('li');
                             li.textContent = interest;
                             interestsList.appendChild(li);
-                        });
-
-                        const imageUrlsList = document.getElementById('imageUrls');
-                        data.user.imageUrl.forEach(imageUrl => {
-                            const li = document.createElement('li');
-                            const img = document.createElement('img');
-                            img.src = imageUrl;
-                            img.alt = 'User Image';
-                            img.style.maxWidth = '100px';
-                            li.appendChild(img);
-                            imageUrlsList.appendChild(li);
                         });
                     } else {
                         document.querySelector('.profile').innerHTML = `<p>Error: ${data.message}</p>`;
